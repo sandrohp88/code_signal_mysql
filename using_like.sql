@@ -14,98 +14,121 @@
 -- To make the list of suspects smaller, you would like to filter out the suspects who can't possibly be guilty according to the information obtained from the clues. For each remaining suspect, you want to save his/her id, name and surname. Please note that the information obtained from the clue should be considered case-insensitive, so for example "bill Green", and "Bill green", and "Bill Green" should all be included in the new table.
 
 -- Given the table Suspect, build the resulting table as follows: the table should have columns id, name and surname and its values should be ordered by the suspects' ids in ascending order.
-CREATE PROCEDURE volleyballResults()
+CREATE PROCEDURE suspectsInvestigation()
 BEGIN
 	select id, name,surname from Suspect
   where height <= 170 and name like 'b%' and surname like 'Gre_n'
   order by id;
 END
 
--- Mr. Cash wants to keep track of his expenses, so he has prepared a list of all the products he bought this month. Now he is interested in finding the product on which he spent the largest amount of money. If there are products that cost the same amount of money, he'd like to find the one with the lexicographically smallest name.
+-- A large amount of money was stolen today from the main city bank, and as the chief of police it's your duty to find the robber.
 
--- The list of expenses is stored in a table Products which has the following columns:
+-- You store information about your suspects in the table Suspect, which has the structure:
 
--- id: unique product id;
--- name: the unique name of the product;
--- price: the price for one item;
--- quantity: the number of items bought.
--- The resulting table should contain one row with a single column: the product with the lexicographically smallest name on which Mr. Cash spent the largest amount of money.
+-- id: unique suspect id;
+-- name: suspect first name;
+-- surname: suspect surname;
+-- height: suspect height;
+-- weight: suspect weight.
+-- You have already gathered some evidence and discovered the following clues:
 
--- The total amount of money spent on a product is calculated as price * quantity.
-CREATE PROCEDURE mostExpensive()
+-- according to the camera records, the robber is taller than 170cm;
+-- the robber left their signature near the crime scene: "B. Gre?n". "B" definitely stands for the first letter of robber's name, and "Gre?n" is their surname. The 4th letter of the surname is smudged by ketchup and is unreadable.
+-- The clues you've obtained allow you to let some suspects go since they can't possibly be guilty, so now you need to build a list that contains the people who can be freed based on the gathered information. For each of these people, you need to know his/her id, name and surname. Please note that the information obtained from the clue should be considered case-insensitive, so for example "bill Green", "Bill GrEeN", and "Bill Green" should all be included in the new table.
+
+-- Given the table Suspect, build the resulting table as follows: the table should have columns id, name and surname and its values should be ordered by the suspects' ids in ascending order.
+CREATE PROCEDURE suspectsInvestigation2()
 BEGIN
-	SELECT name
-  FROM Products 
-  ORDER BY (price*quantity) DESC , name ASC
-  LIMIT 1;
+	select id,name,surname from Suspect
+  where height <= 170 or   name  not like 'B%'  or surname not like  'Gre_n'
+  order by id;
 END
 
--- You are working as a recruiter at a big IT company, and you're actively looking for candidates who take the top places in major programming contests. Since the grand finale of the annual City Competition, you've been reaching out to the top participants from the leaderboard, and successfully so.
+-- You are managing a large website that uses a special algorithm for user identification. In particular, it generates a unique attribute for each person based only on their first and last names and some additional metadata.
 
--- You have already interviewed all the prize winners (the top 3 participants), but that's not enough right now. Your company needs more specialists, so now you would like to connect with the participants who took the next 5 places.
+-- After analyzing the server logs today you found out that the website security has been breached and the data of some of your users might have been compromised.
 
--- The contest leaderboard is stored in a table leaderboard with the following columns:
+-- The users' info is stored in the table users with the following structure:
 
--- id: unique id of the participant;
--- name: the name of the participant;
--- score: the score the participant achieved in the competition.
--- The resulting table should contain the names of the participants who took the 4th to 8th places inclusive, sorted in descending order of their places. If there are fewer than 8 participants, the results should contain those who ranked lower than 3rd place.
+-- first_name: user's first name;
+-- second_name: user's last name;
+-- attribute: a unique attribute string of this user.
+-- It seems that only the users those attribute was generated by the old version of your special algorithm were affected. Such attributes have the following format (accurate to letter cases): <one or more arbitrary character>%<first name>_<second name>%<zero or more arbitrary characters>. It's your duty now to warn the users that have these attributes about possible risks.
 
--- It is guaranteed that there are at least 3 prize winners in the leaderboard and that all participants have different scores.
-CREATE PROCEDURE contestLeaderboard()
+-- Given the users table, compose the resulting table consisting only of the rows that contain affected users' info. The result should be sorted by the attributes in ascending order.
+CREATE PROCEDURE securityBreach()
 BEGIN
-	select name 
-  from leaderboard
-  order by score desc, name asc
-  limit 3,5 
-  ;
+    select first_name, second_name, attribute from users
+    where attribute  like binary concat('%_\%',first_name,'\_',second_name,'\%%')
+    order by attribute
+	;
 END
 
--- At the end of every semester your professor for "Introduction to Databases" saves the exam results of every student in a simple database system. In the database table Grades, there are five columns:
+-- Implement the missing code, denoted by ellipses. You may not modify the pre-existing code.
+-- Your professor gave the class a bonus task: Write a program that will check the answers for the latest test. The program will be given a table answers with the following columns:
 
--- Name: the name of the student;
--- ID: the student's ID number (a 5 byte positive integer);
--- Midterm1: the result of the first midterm out of 100 points;
--- Midterm2: the result of the second midterm out of 100 points;
--- Final: the result of the final exam, this time out of a possible 200 points.
--- According to school policy, there are three possible ways to evaluate a grade:
+-- id - the unique ID of the question;
+-- correct_answer - the correct answer to the question, given as a string;
+-- given_answer - the answer given to the question, which can be NULL.
+-- Your task is to return the table with a column id and a column checks, where for each answers id the following string should be returned:
 
--- Option 1:
--- Midterm 1: 25% of the grade
--- Midterm 2: 25% of the grade
--- Final exam: 50% of the grade
--- Option 2:
--- Midterm 1: 50% of the grade
--- Midterm 2: 50% of the grade
--- Option 3:
--- Final exam: 100% of the grade.
--- Each student's final grade comes from the option that works the best for that student.
+-- "no answer" if the given_answer is empty;
+-- "correct" if the given_answer is the same as the correct_answer;
+-- "incorrect" if the given_answer is not empty and is incorrect.
+-- Order the records in the answer table by id.
+CREATE PROCEDURE testCheck()
+    SELECT id, IF (given_answer is null,'no answer' , if(given_answer = correct_answer, 'correct' ,'incorrect' ) ) AS checks
+    FROM answers
+    ORDER BY id;
 
--- As a Teaching Assistant (TA), you need to query the name and id of all the students whose best grade comes from Option 3, sorted based on the first 3 characters of their name. If the first 3 characters of two names are the same, then the student with the lower ID value comes first.
+-- You're a math teacher at an elementary school. Today you taught your class basic arithmetic operations ("+", "-", "*", "/") and now you need to give the students some homework. You have a lot of expressions in the format a <operation> b = c, where a, b, and c are some integers and operation is one of the operations given above.
 
-CREATE PROCEDURE gradeDistribution()
+-- Information about these expressions is stored in the table expressions, which has the structure:
+
+-- id: the unique operation id;
+-- a: an integer;
+-- b: an integer;
+-- operation: one of the operations given above ("+", "-", "*", or "/");
+-- c: an integer.
+-- The homework you're going to give is simple: For each expression, the student needs to determine whether it's correct or not, i.e. whether it's true that the expression to the left of the = sign equals c.
+
+-- Since you have many students and checking all their answers manually is a lot of work, you want to streamline the process by automatically identifying all the expressions that are correct. Given the table expressions, build the resulting table as follows: The table should have the same columns as the initial table does, but it should only contain those rows that represent correct expressions. The rows should be ordered by id.
+CREATE PROCEDURE expressionsVerification()
 BEGIN
-	select Name,ID 
-  from Grades
-  where (Midterm1/4 + Midterm2/4 + Final/2) and (Midterm1/2 + Midterm2/2) < Final
-  order by substring(name,1,3) asc , id asc;
+	select * 
+  from expressions    
+  where (operation = '+' and a + b = c) or 
+    (operation = '*' and a * b = c) or 
+    (operation = '-' and a - b = c) or 
+    (operation = '/' and a / b = c);
 END
 
--- Your nephews Huey, Dewey, and Louie are staying with you over the winter holidays. Ever since they arrived, you've hardly had a day go by without some kind of incident - the little rascals do whatever they please! Actually, you're not even mad; the ideas they come up with are pretty amazing, and it looks like there's even a system to their mischief.
+-- You are managing a small newspaper subscription service. Anyone who uses it can subscribe to a large number of different newspapers for a full year or just a half year.
 
--- You decided to track and analyze their behavior, so you created the mischief table in your local database. The table has the following columns:
+-- The information about subscriptions is stored in the full_year and half_year tables, which have the following structures:
 
--- mischief_date: the date of the mischief (of the date type);
--- author: the nephew who caused the mischief ("Huey", "Dewey" or "Louie");
--- title: the title of the mischief.
--- It looks like each of your nephews is active on a specific day of the week. You decide to check your theory by creating another table as follows:
--- The resulting table should contain four columns, weekday, mischief_date, author, and title, where weekday is the weekday of mischief_date (0 for Monday, 1 for Tuesday, and so on, with 6 for Sunday). The table should be sorted by the weekday column, and for each weekday Huey's mischief should go first, Dewey's should go next, and Louie's should go last. In case of a tie, mischief_date should be a tie-breaker. If there's still a tie, the record with the lexicographically smallest title should go first.
-
--- It is guaranteed that all entries of mischief are unique.
-CREATE PROCEDURE mischievousNephews()
+-- full_year:
+-- id: the unique subscription ID;
+-- newspaper: the newspaper's name;
+-- subscriber: the name of the subscriber.
+-- half_year
+-- id: the unique subscription ID;
+-- newspaper: the newspaper's name;
+-- subscriber: the name of the subscriber.
+-- Given the full_year and half_year tables, compose the result as follows: The resulting table should have one column subscriber that contains all the distinct names of anyone who is subscribed to a newspaper with the word Daily in its name. The table should be sorted in ascending order by the subscribers' first names.
+CREATE PROCEDURE newsSubscribers()
 BEGIN
-	select (WEEKDAY(mischief_date)) as weekday,mischief_date,author,title 
-  from mischief
-  order by weekday asc, length(author),author, mischief_date, title asc
-    ;
+	select distinct subscriber 
+  from (
+        select  subscriber 
+        from full_year
+        where newspaper like '%daily%'
+        union all                
+        select subscriber 
+        from half_year
+        where newspaper like '%daily%'
+                
+        ) subquery 
+        
+  order by subscriber;
 END
